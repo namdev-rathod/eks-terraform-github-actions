@@ -1,2 +1,3 @@
-# eks-terraform-github-actions
-EKS Cluster Setup By Using Terraform
+# 🚀 AWS EKS DevOps CI/CD Project
+
+This project demonstrates a real-time, end-to-end deployment pipeline using **AWS EKS**, **Terraform**, **Kubernetes**, and **GitHub Actions**...
