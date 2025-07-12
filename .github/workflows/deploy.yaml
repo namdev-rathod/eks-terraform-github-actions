@@ -1,4 +1,4 @@
-name: Deploy EKS Infrastructure and Application
+name: 🚀 Deploy EKS Infrastructure and Application
 
 on:
   push:
@@ -42,23 +42,25 @@ jobs:
       - name: 🚀 Terraform Apply
         run: terraform apply -auto-approve tfplan
 
-      - name: 📡 Update kubeconfig
+      - name: 📡 Update kubeconfig for EKS
         run: |
           aws eks update-kubeconfig \
             --region ap-south-1 \
             --name EKS-DevOps-Cluster
 
-      - name: 🧠 Install kubectl
+      - name: 🧠 Install kubectl v1.33
         uses: azure/setup-kubectl@v3
+        with:
+          version: "v1.33.0"
 
       - name: 📤 Deploy Kubernetes manifests
         run: |
-          kubectl apply -f ../../../k8s/deployment.yaml
-          kubectl apply -f ../../../k8s/service.yaml
-          kubectl apply -f ../../../k8s/ingress.yaml
+          kubectl apply -f k8s/deployment.yaml
+          kubectl apply -f k8s/service.yaml
+          kubectl apply -f k8s/ingress.yaml
 
       - name: ✅ Verify Deployment
         run: |
-          kubectl rollout status deployment/demo-app
+          kubectl rollout status deployment/eks-devops-app
           kubectl get ingress
           kubectl get pods -o wide
