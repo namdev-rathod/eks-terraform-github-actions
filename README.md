@@ -1,4 +1,4 @@
-# 🚀 AWS EKS DevOps CI/CD Project With Terraform and GitHub Actions
+# 🚀 DevOps CI/CD Project With AWS EKS, Terraform and GitHub Actions
 
 This project demonstrates a real-time, end-to-end deployment pipeline using **AWS EKS**, **Terraform**, **Kubernetes**, and **GitHub Actions**. The goal is to provision a fully functional Kubernetes environment on AWS and deploy a containerized application through CI/CD.
 
