@@ -1,20 +1,26 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: demo-ingress
+  name: eks-devops-ingress
   annotations:
     alb.ingress.kubernetes.io/scheme: internet-facing
     alb.ingress.kubernetes.io/target-type: ip
-    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}]'
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS": 443}]'
+    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:ap-south-1:666930281169:certificate/19244db9-f4ad-4af8-bd90-6ffb94a11296
+    alb.ingress.kubernetes.io/ssl-redirect: '443'
+    alb.ingress.kubernetes.io/backend-protocol: HTTP
+    alb.ingress.kubernetes.io/group.name: eks-devops-apps
+    alb.ingress.kubernetes.io/load-balancer-attributes: idle_timeout.timeout_seconds=60
 spec:
   ingressClassName: alb
   rules:
-    - http:
+    - host: app.awsguruji.net
+      http:
         paths:
           - path: /
             pathType: Prefix
             backend:
               service:
-                name: demo-service
+                name: eks-devops-service
                 port:
                   number: 80

@@ -2,195 +2,161 @@
 
 This project demonstrates a real-time, end-to-end deployment pipeline using **AWS EKS**, **Terraform**, **Kubernetes**, and **GitHub Actions**. The goal is to provision a fully functional Kubernetes environment on AWS and deploy a containerized application through CI/CD.
 
-**End-to-End AWS EKS DevOps Project** using Terraform modules, Kubernetes manifests, ALB Ingress, and GitHub Actions for CI/CD. Deploys a sample NGINX application to an EKS cluster (v1.33) in a custom VPC with automated rollout verification.
+Using Terraform modules, Kubernetes manifests, ALB Ingress, and GitHub Actions for CI/CD. Deploys a sample NGINX application to an EKS cluster (v1.33) in a custom VPC with automated rollout verification.
 
 ---
 
-## 📌 Project Overview
+### 🚀 Project Overview
 
-- **Cloud Platform:** AWS
-- **Orchestration:** Kubernetes on EKS (v1.33)
-- **Infrastructure as Code:** Terraform (module-based)
-- **CI/CD Tool:** GitHub Actions
-- **Load Balancer:** AWS ALB Ingress Controller
-- **App:** Sample NGINX Web App
+This project demonstrates how to provision a **production-grade AWS EKS cluster** using:
 
----
-
-## 🧱 EKS Cluster Configuration
-
-| Property            | Value                              |
-|---------------------|-------------------------------------|
-| Cluster Name        | `EKS-DevOps-Cluster`               |
-| Node Group Name     | `EKS-DevOps-Cluster-NodeGroup`     |
-| Instance Type       | `t4g.medium`                       |
-| Min / Max Nodes     | `1 / 2`                            |
-| VPC CIDR            | `10.0.0.0/16`                      |
-| Ingress Type        | Application Load Balancer (ALB)    |
+* 🧱 **Terraform Modules**
+* 🏗️ Custom **VPC**
+* ☁️ **Amazon EKS** with managed node groups
+* 📦 Remote **state management** in S3
+* 🔄 Deployment with **GitHub Actions**
 
 ---
 
-## 📁 Project Structure
+### 🛠️ Tech Stack
+
+| Component     | Tool/Service             |
+| ------------- | ------------------------ |
+| Infra as Code | Terraform (Modular)      |
+| Backend       | AWS S3 (Terraform state) |
+| Compute       | Amazon EKS (v1.33)       |
+| Networking    | Custom VPC + Subnets     |
+| CI/CD         | GitHub Actions           |
+| IAM/Auth      | AWS IAM Roles            |
+
+---
+
+### 🧱 Architecture
 
 ```
-
-eks-devops-project/
-├── terraform/
-│   ├── modules/
-│   │   ├── vpc/
-│   │   │   └── main.tf
-│   │   ├── eks/
-│   │   │   └── main.tf
-│   └── environments/
-│       └── dev/
-│           ├── main.tf
-│           ├── variables.tf
-│           └── outputs.tf
-├── k8s/
-│   ├── deployment.yaml
-│   ├── service.yaml
-│   └── ingress.yaml
-├── .github/
-│   └── workflows/
-│       └── deploy.yaml
-└── README.md
-
-````
+AWS Cloud
+│
+├── VPC (10.0.0.0/16)
+│   ├── Private Subnet 1 (AZ-a)
+│   └── Private Subnet 2 (AZ-b)
+│
+└── EKS Cluster (1.33)
+    └── Managed Node Group (t4g.medium)
+```
 
 ---
 
-## ⚙️ Setup Guide
+### 📂 Folder Structure
 
-### 🧩 Step 1: Clone the Repository
-
-```bash
-git clone https://github.com/your-username/eks-devops-project.git
-cd eks-devops-project
-````
+```
+terraform/
+├── environments/
+│   └── dev/
+│       ├── main.tf          # S3 backend, module references
+│       ├── variables.tf     # Input variables
+│       └── outputs.tf       # Outputs
+└── modules/
+    ├── vpc/                 # Custom VPC with subnets
+    └── eks/                 # EKS cluster & node group config
+```
 
 ---
 
-### ☁️ Step 2: Provision AWS Infrastructure
+### 📦 Pre-Requisites
+
+* ✅ AWS CLI configured
+* ✅ Terraform v1.5+ installed
+* ✅ S3 bucket for state:
+
+  ```bash
+  aws s3api create-bucket \
+    --bucket eks-devops-tf-backend \
+    --region ap-south-1 \
+    --create-bucket-configuration LocationConstraint=ap-south-1
+  ```
+
+---
+
+### 🚀 Deployment Steps
 
 ```bash
 cd terraform/environments/dev
+
+# Initialize Terraform with S3 backend
 terraform init
-terraform apply -auto-approve
-```
 
-> This creates VPC, Subnets, EKS Cluster, and Node Group.
+# Review the execution plan
+terraform plan
 
----
-
-### 🌍 Step 3: Install AWS Load Balancer Controller (one-time)
-
-```bash
-helm repo add eks https://aws.github.io/eks-charts
-helm repo update
-
-kubectl create namespace kube-system
-
-helm install aws-load-balancer-controller eks/aws-load-balancer-controller \
-  -n kube-system \
-  --set clusterName=EKS-DevOps-Cluster \
-  --set serviceAccount.create=false \
-  --set region=ap-south-1 \
-  --set vpcId=<your-vpc-id> \
-  --set serviceAccount.name=aws-load-balancer-controller
+# Apply the infrastructure
+terraform apply
 ```
 
 ---
 
-### 🔐 Step 4: Set GitHub Secrets
+### ⚙️ GitHub Actions Workflow (CI/CD)
 
-Go to GitHub → `Settings` → `Secrets and Variables` → `Actions` and add:
+Here’s a minimal `eks-ci.yml` example for deployment from GitHub:
 
-| Name                    | Description         |
-| ----------------------- | ------------------- |
-| `AWS_ACCESS_KEY_ID`     | Your AWS Access Key |
-| `AWS_SECRET_ACCESS_KEY` | Your AWS Secret Key |
+```yaml
+name: 🚀 Deploy EKS Cluster
 
----
+on:
+  push:
+    branches: [ main ]
 
-### 🚀 Step 5: Push Code to GitHub
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
 
-```bash
-git add .
-git commit -m "Initial working EKS CI/CD project"
-git push origin main
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.6.0
+
+      - name: Terraform Init
+        run: terraform -chdir=terraform/environments/dev init
+
+      - name: Terraform Plan
+        run: terraform -chdir=terraform/environments/dev plan
+
+      - name: Terraform Apply
+        run: terraform -chdir=terraform/environments/dev apply -auto-approve
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 ```
 
----
-
-### 🤖 Step 6: GitHub Actions Deploys Automatically
-
-* Deploys Kubernetes manifests
-* Verifies rollout status
-* Prints pod + ingress info
-
-You can check logs in the **Actions tab** of your repository.
+> 🔐 Set `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` in your GitHub repo **Secrets**.
 
 ---
 
-## 🔎 Useful kubectl Commands
+### ✅ Outputs
 
-```bash
-kubectl get nodes
-kubectl get pods
-kubectl get svc
-kubectl get ingress
-kubectl rollout status deployment/demo-app
-```
+* EKS Cluster Name
+* VPC ID
+* Private Subnet IDs
 
 ---
 
-## 🎯 Result
+### 🙌 Contributing
 
-* ✅ Infrastructure provisioned via Terraform
-* ✅ EKS Cluster with auto-scaling node group
-* ✅ Sample NGINX app deployed with K8s
-* ✅ Public access via ALB Ingress
-* ✅ CI/CD enabled via GitHub Actions
+Feel free to fork and enhance this repo. Ideal for:
 
----
-
-## 👨‍🏫 Workshop Tips
-
-* Show real-time `terraform apply`
-* Explain module-based folder structure
-* Show `kubectl get ingress` with ALB DNS
-* Access NGINX via browser from public ALB
-* Show GitHub Action workflow live
+* DevOps students
+* Workshop trainers
+* Cloud engineers practicing Terraform + EKS
 
 ---
 
-## 📷 Screenshots (Optional)
+### 📩 Connect with Me
 
-> Include screenshots of:
->
-> * Terraform apply output
-> * GitHub Actions success
-> * Ingress DNS in browser
-> * kubectl output
+👤 **Namdev Rathod**
+📺 YouTube: [DevOps With Namdev](https://github.com/namdev-rathod)
+🔗 GitHub: [namdev-rathod](https://github.com/namdev-rathod)
 
 ---
-
-## 🙌 Credits
-
-Built by **Namdev Rathod** for DevOps training and workshops.
-Feel free to fork and extend!
-
----
-
-```
-
----
-
-## ✅ Final Tip Before Workshop
-
-- Make sure your **Ingress controller is deployed**.
-- Validate EKS access with `aws eks update-kubeconfig`.
-- Test `kubectl apply -f k8s/` locally once before demo.
-- Keep an **ALB DNS name ready to open in browser**.
-
-```

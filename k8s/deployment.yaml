@@ -1,19 +1,19 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: demo-app
+  name: eks-devops-app
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: demo
+      app: eks-devops-app
   template:
     metadata:
       labels:
-        app: demo
+        app: eks-devops-app
     spec:
       containers:
-      - name: demo
+      - name: eks-devops-app
         image: nginx
         ports:
         - containerPort: 80
