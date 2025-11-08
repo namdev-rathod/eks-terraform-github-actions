@@ -190,5 +190,4 @@ jobs:
             --distribution-id ABCDEFGHIJ \
             --paths "/*"
 ```
-
 ---
