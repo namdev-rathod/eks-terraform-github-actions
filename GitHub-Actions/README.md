@@ -193,14 +193,3 @@ jobs:
 
 ---
 
-# 📘 **Summary for Teaching**
-
-| Topic                       | Key Takeaway                                    |
-| --------------------------- | ----------------------------------------------- |
-| **GitHub Actions**          | Automates your CI/CD directly in GitHub         |
-| **Benefits**                | Easy setup, reusable actions, secure, scalable  |
-| **Workflow**                | Trigger → Job → Steps → Actions                 |
-| **Comparison with Jenkins** | GitHub Actions = modern, integrated alternative |
-| **Example YAML**            | Clear CI/CD pipeline for Node.js deployment     |
-
----
