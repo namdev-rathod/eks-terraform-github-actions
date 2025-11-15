@@ -46,7 +46,7 @@ jobs:
         run: |
           aws eks update-kubeconfig \
             --region ap-south-1 \
-            --name EKS-DevOps-Cluster
+            --name eks-devops
 
       - name: 🧠 Install kubectl v1.33
         uses: azure/setup-kubectl@v3
