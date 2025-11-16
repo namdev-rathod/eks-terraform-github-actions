@@ -49,7 +49,3 @@ module "eks" {
     Terraform   = "true"
   }
 }
-
-output "cluster_name" {
-  value = module.eks.cluster_name
-}
