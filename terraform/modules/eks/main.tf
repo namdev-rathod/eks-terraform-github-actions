@@ -24,10 +24,20 @@ module "eks" {
   vpc_id     = var.vpc_id
   subnet_ids = var.private_subnets
 
-  # ✅ Make EKS reachable ONLY on public endpoint
-  cluster_endpoint_public_access           = true
-  cluster_endpoint_private_access          = false
-  cluster_endpoint_public_access_cidrs     = ["0.0.0.0/0"]    # open temporarily
+  # Public API endpoint
+  cluster_endpoint_public_access       = true
+  cluster_endpoint_private_access      = false
+  cluster_endpoint_public_access_cidrs = ["0.0.0.0/0"]
+
+  # REQUIRED for EKS v20+ RBAC mode
+  authentication_mode = "API_AND_CONFIG_MAP"
+
+  access_entries = {
+    github_actions = {
+      principal_arn     = "arn:aws:iam::666930281169:user/GitHub-Actions"
+      kubernetes_groups = ["system:masters"]
+    }
+  }
 
   eks_managed_node_groups = {
     devops_nodes = {
