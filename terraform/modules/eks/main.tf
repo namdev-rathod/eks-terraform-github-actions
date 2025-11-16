@@ -24,9 +24,10 @@ module "eks" {
   vpc_id     = var.vpc_id
   subnet_ids = var.private_subnets
 
-  # 🔥 CRITICAL FIX — Allows GitHub Actions to access EKS API
-  cluster_endpoint_public_access  = true
-  cluster_endpoint_private_access = true
+  # 🔥 CRITICAL FIX — Allows GitHub Actions to reach EKS API endpoint
+  cluster_endpoint_public_access           = true
+  cluster_endpoint_private_access          = true
+  cluster_endpoint_public_access_cidrs     = ["0.0.0.0/0"]   # REQUIRED
 
   eks_managed_node_groups = {
     devops_nodes = {
