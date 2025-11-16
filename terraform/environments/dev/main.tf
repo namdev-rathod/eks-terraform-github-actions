@@ -7,19 +7,12 @@ terraform {
   }
 }
 
-# -------------------------
-# VPC Module
-# -------------------------
 module "vpc" {
   source   = "../../modules/vpc"
-
   vpc_cidr = var.vpc_cidr
   env      = var.env
 }
 
-# -------------------------
-# EKS Module
-# -------------------------
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
   version = "~> 20.8"

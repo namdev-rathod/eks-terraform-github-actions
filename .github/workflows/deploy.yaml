@@ -11,10 +11,6 @@ jobs:
     name: Terraform + EKS Deployment
     runs-on: ubuntu-latest
 
-    defaults:
-      run:
-        working-directory: terraform/environments/dev
-
     steps:
       - name: 📥 Checkout repository
         uses: actions/checkout@v3
@@ -31,16 +27,21 @@ jobs:
         with:
           terraform_version: 1.7.4
 
+      # Terraform runs inside environment folder only
       - name: 🧱 Terraform Init
+        working-directory: terraform/environments/dev
         run: terraform init
 
       - name: 🔍 Terraform Validate
+        working-directory: terraform/environments/dev
         run: terraform validate
 
       - name: 📐 Terraform Plan
+        working-directory: terraform/environments/dev
         run: terraform plan -out=tfplan
 
       - name: 🚀 Terraform Apply
+        working-directory: terraform/environments/dev
         run: terraform apply -auto-approve tfplan
 
       - name: 📡 Update kubeconfig for EKS
@@ -54,11 +55,12 @@ jobs:
         with:
           version: "v1.34.0"
 
+      # kubectl runs from repo root
       - name: 📤 Deploy Kubernetes manifests
         run: |
-          kubectl apply -f ../../k8s/deployment.yaml
-          kubectl apply -f ../../k8s/service.yaml
-          kubectl apply -f ../../k8s/ingress.yaml
+          kubectl apply -f k8s/deployment.yaml
+          kubectl apply -f k8s/service.yaml
+          kubectl apply -f k8s/ingress.yaml
 
       - name: ✅ Verify Deployment
         run: |
