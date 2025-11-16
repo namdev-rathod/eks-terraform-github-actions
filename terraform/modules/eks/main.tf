@@ -24,12 +24,16 @@ module "eks" {
   vpc_id     = var.vpc_id
   subnet_ids = var.private_subnets
 
-  # Public API endpoint
+  ##########################################
+  # 🔥 PUBLIC-ONLY EKS ENDPOINT (Required)
+  ##########################################
   cluster_endpoint_public_access       = true
   cluster_endpoint_private_access      = false
   cluster_endpoint_public_access_cidrs = ["0.0.0.0/0"]
 
-  # REQUIRED for EKS v20+ RBAC mode
+  ##########################################
+  # 🔥 EKS v20+ Authentication Method
+  ##########################################
   authentication_mode = "API_AND_CONFIG_MAP"
 
   access_entries = {
@@ -39,6 +43,9 @@ module "eks" {
     }
   }
 
+  ##########################################
+  # Node Group
+  ##########################################
   eks_managed_node_groups = {
     devops_nodes = {
       name            = var.node_group_name
