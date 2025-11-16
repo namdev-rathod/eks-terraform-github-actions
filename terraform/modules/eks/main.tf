@@ -20,17 +20,25 @@ module "eks" {
 
   cluster_name    = var.cluster_name
   cluster_version = "1.34"
-  subnet_ids      = var.private_subnets
-  vpc_id          = var.vpc_id
+
+  vpc_id     = var.vpc_id
+  subnet_ids = var.private_subnets
+
+  # 🔥 CRITICAL FIX — Allows GitHub Actions to access EKS API
+  cluster_endpoint_public_access  = true
+  cluster_endpoint_private_access = true
 
   eks_managed_node_groups = {
     devops_nodes = {
-      name           = var.node_group_name
+      name            = var.node_group_name
+      use_name_prefix = false
+
       instance_types = ["t4g.medium"]
       ami_type       = "AL2023_ARM_64_STANDARD"
-      min_size       = 1
-      max_size       = 2
-      desired_size   = 1
+
+      min_size     = 1
+      max_size     = 2
+      desired_size = 1
     }
   }
 
