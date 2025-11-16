@@ -49,10 +49,10 @@ jobs:
             --region ap-south-1 \
             --name eks-devops
 
-      - name: 🧠 Install kubectl v1.33
+      - name: 🧠 Install kubectl v1.34
         uses: azure/setup-kubectl@v3
         with:
-          version: "v1.33.0"
+          version: "v1.34.0"
 
       - name: 📤 Deploy Kubernetes manifests
         run: |

@@ -21,12 +21,35 @@ module "vpc" {
 # EKS Module
 # -------------------------
 module "eks" {
-  source           = "../../modules/eks"
+  source  = "terraform-aws-modules/eks/aws"
+  version = "~> 20.8"
 
-  cluster_name     = var.cluster_name
-  node_group_name  = var.node_group_name
+  cluster_name    = var.cluster_name
+  cluster_version = "1.34"
 
-  # Use module outputs from VPC
-  vpc_id           = module.vpc.vpc_id
-  private_subnets  = module.vpc.private_subnets
+  vpc_id     = module.vpc.vpc_id
+  subnet_ids = module.vpc.private_subnets
+
+  eks_managed_node_groups = {
+    devops_nodes = {
+      name            = var.node_group_name
+      use_name_prefix = false
+
+      instance_types = ["t4g.medium"]
+      ami_type       = "AL2023_ARM_64_STANDARD"
+
+      min_size     = 1
+      max_size     = 2
+      desired_size = 1
+    }
+  }
+
+  tags = {
+    Environment = var.env
+    Terraform   = "true"
+  }
+}
+
+output "cluster_name" {
+  value = module.eks.cluster_name
 }
