@@ -23,7 +23,7 @@ module "eks" {
   access_entries = {
     github_actions = {
       principal_arn     = "arn:aws:iam::666930281169:user/GitHub-Actions"
-      kubernetes_groups = ["system:masters"]
+      kubernetes_groups = ["cluster-admin"]
     }
   }
 
