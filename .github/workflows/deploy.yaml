@@ -56,6 +56,9 @@ jobs:
         with:
           version: "v1.33.0"
 
+      - name: 🔐 Grant RBAC permissions to GitHub Actions
+        run: kubectl apply -f k8s/rbac-github-actions.yaml
+
       # kubectl runs from repo root
       - name: 📤 Deploy Kubernetes manifests
         run: |
