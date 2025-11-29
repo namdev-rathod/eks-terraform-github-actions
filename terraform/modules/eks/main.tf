@@ -1,39 +1,23 @@
-variable "cluster_name" {
-  type = string
-}
-
-variable "node_group_name" {
-  type = string
-}
-
-variable "vpc_id" {
-  type = string
-}
-
-variable "private_subnets" {
-  type = list(string)
-}
-
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
   version = "~> 20.8"
 
   cluster_name    = var.cluster_name
-  cluster_version = "1.34"
+  cluster_version = var.cluster_version
 
   vpc_id     = var.vpc_id
   subnet_ids = var.private_subnets
 
-  ##########################################
-  # 🔥 PUBLIC-ONLY EKS ENDPOINT (Required)
-  ##########################################
+  #############################################
+  # PUBLIC ENDPOINT
+  #############################################
   cluster_endpoint_public_access       = true
   cluster_endpoint_private_access      = false
   cluster_endpoint_public_access_cidrs = ["0.0.0.0/0"]
 
-  ##########################################
-  # 🔥 EKS v20+ Authentication Method
-  ##########################################
+  #############################################
+  # AUTH SETTINGS
+  #############################################
   authentication_mode = "API_AND_CONFIG_MAP"
 
   access_entries = {
@@ -43,9 +27,9 @@ module "eks" {
     }
   }
 
-  ##########################################
-  # Node Group
-  ##########################################
+  #############################################
+  # NODE GROUPS
+  #############################################
   eks_managed_node_groups = {
     devops_nodes = {
       name            = var.node_group_name
@@ -66,6 +50,3 @@ module "eks" {
   }
 }
 
-output "cluster_name" {
-  value = module.eks.cluster_name
-}

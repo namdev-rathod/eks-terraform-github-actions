@@ -1,5 +1,5 @@
 variable "vpc_cidr" {
-  description = "CIDR block for VPC"
+  description = "CIDR block for the VPC"
   type        = string
 }
 
@@ -9,11 +9,12 @@ variable "env" {
 }
 
 variable "cluster_name" {
-  description = "EKS cluster name"
+  description = "Name of the EKS cluster"
   type        = string
 }
 
 variable "node_group_name" {
-  description = "EKS node group name"
+  description = "Name of the managed node group"
   type        = string
 }
+
