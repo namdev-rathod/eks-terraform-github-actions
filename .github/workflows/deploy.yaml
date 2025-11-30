@@ -2,72 +2,75 @@ name: 🚀 Deploy EKS Infrastructure and Application
 
 on:
   push:
-    branches:
-      - main
-      - dev
+    branches: [ "main", "dev" ]
   workflow_dispatch:
 
 jobs:
   deploy:
-    name: Terraform + EKS Deployment
     runs-on: ubuntu-latest
 
     steps:
-      - name: 📥 Checkout repository
-        uses: actions/checkout@v3
+    - name: 📥 Checkout code
+      uses: actions/checkout@v3
 
-      - name: 🛡️ Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ap-south-1
+    - name: 🛡️ Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ap-south-1
 
-      - name: 📦 Install Terraform
-        uses: hashicorp/setup-terraform@v2
-        with:
-          terraform_version: 1.7.4
+    # ----------------- Terraform Deploy -----------------
+    - name: 📦 Install Terraform
+      uses: hashicorp/setup-terraform@v2
+      with:
+        terraform_version: 1.7.4
 
-      # Terraform runs inside environment folder only
-      - name: 🧱 Terraform Init
-        working-directory: terraform/environments/dev
-        run: terraform init
+    - name: 🧱 Terraform Init
+      working-directory: terraform/environments/dev
+      run: terraform init
 
-      - name: 🔍 Terraform Validate
-        working-directory: terraform/environments/dev
-        run: terraform validate
+    - name: 📐 Terraform Apply
+      working-directory: terraform/environments/dev
+      run: terraform apply -auto-approve
 
-      - name: 📐 Terraform Plan
-        working-directory: terraform/environments/dev
-        run: terraform plan -out=tfplan
+    # ----------------- Docker Build & Push to ECR -----------------
+    - name: 🔐 Login to ECR
+      uses: aws-actions/amazon-ecr-login@v2
 
-      - name: 🚀 Terraform Apply
-        working-directory: terraform/environments/dev
-        run: terraform apply -auto-approve tfplan
+    - name: 🛠️ Build Docker Image
+      working-directory: frontend-app
+      run: |
+        docker build -t devops .
 
-      - name: 📡 Update kubeconfig for EKS
-        run: |
-          aws eks update-kubeconfig \
-            --region ap-south-1 \
-            --name eks-devops-cluster
+    - name: 🏷️ Tag Docker Image
+      run: |
+        docker tag devops:latest 666930281169.dkr.ecr.ap-south-1.amazonaws.com/devops:latest
 
-      - name: 🧠 Install kubectl v1.33
-        uses: azure/setup-kubectl@v3
-        with:
-          version: "v1.33.0"
+    - name: 📤 Push Image to ECR
+      run: |
+        docker push 666930281169.dkr.ecr.ap-south-1.amazonaws.com/devops:latest
 
-      - name: 🔐 Grant RBAC permissions to GitHub Actions
-        run: kubectl apply -f k8s/rbac-github-actions.yaml
+    # ----------------- Deploy to EKS -----------------
+    - name: 🧠 Install kubectl
+      uses: azure/setup-kubectl@v3
+      with:
+        version: 'v1.33.0'
 
-      # kubectl runs from repo root
-      - name: 📤 Deploy Kubernetes manifests
-        run: |
-          kubectl apply -f k8s/deployment.yaml
-          kubectl apply -f k8s/service.yaml
-          kubectl apply -f k8s/ingress.yaml
+    - name: 📡 Update kubeconfig
+      run: |
+        aws eks update-kubeconfig \
+          --region ap-south-1 \
+          --name eks-devops-cluster
 
-      - name: ✅ Verify Deployment
-        run: |
-          kubectl rollout status deployment/eks-devops-app
-          kubectl get ingress
-          kubectl get pods -o wide
+    - name: 🚀 Deploy Kubernetes Manifests
+      run: |
+        kubectl set image deployment/eks-devops-app \
+          eks-devops-app=666930281169.dkr.ecr.ap-south-1.amazonaws.com/devops:latest
+
+        kubectl apply -f k8s/
+
+    - name: ✅ Verify Rollout
+      run: |
+        kubectl rollout status deployment/eks-devops-app
+        kubectl get ingress
