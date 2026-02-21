@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: eks-devops-app
-        image: 666930281169.dkr.ecr.ap-south-1.amazonaws.com/devops:latest
+        image: IMAGE_PLACEHOLDER
         imagePullPolicy: Always
         ports:
         - containerPort: 80
