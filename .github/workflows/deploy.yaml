@@ -74,6 +74,6 @@ jobs:
 
     - name: ✅ Verify Rollout
       run: |
-        kubectl rollout status deployment/eks-devops-app --timeout=180s
-        kubectl get pods -o wide
-        kubectl get svc
+        kubectl rollout status deployment/eks-devops-app -n devops --timeout=180s
+        kubectl get pods -n devops -o wide
+        kubectl get svc -n devops
