@@ -1,6 +1,5 @@
 # 🧠 **What is GitHub Actions?**
 
-
 👉 **GitHub Actions** is an **automation platform** built directly into **GitHub** that helps you:
 
 * **Build**, **test**, and **deploy** your code automatically.
