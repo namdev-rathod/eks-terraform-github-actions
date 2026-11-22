@@ -89,6 +89,9 @@ terraform init
 # Review the execution plan
 terraform plan
 
+# Validate Synatax Before Deploy
+terraform validate
+
 # Apply the infrastructure
 terraform apply
 ```
